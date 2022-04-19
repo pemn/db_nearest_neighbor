@@ -2217,9 +2217,11 @@ class AppTk(tk.Tk):
     threading.Thread(None, fork).start()
 
   def showHelp(self):
-    script_pdf = ClientScript.file('pdf')
-    if os.path.exists(script_pdf):
-      os.system(script_pdf)
+    for x in ['pdf','html']:
+      script_doc = ClientScript.file(x)
+      if os.path.exists(script_doc):
+        os.startfile(script_doc)
+        break
     else:
       messagebox.showerror('Help', 'Documentation file not found')
   
