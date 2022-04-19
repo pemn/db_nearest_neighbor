@@ -1,11 +1,13 @@
 # db_nearest_neighbor
-match samples of different drillholes and of same lithology
+Match samples of different drillholes and of same lithology.
+Its very generic, so can also be used to match samples with block models, block models with survey points, and many other cases where you need to match near points.
+
 ## screenshots  
 ### Graphic User Interface  
 ![screenshot1](assets/screenshot1.png?raw=true)  
   
 ### Result  
-![screenshot5](assets/screenshot2.png?raw=true)  
+![screenshot2](assets/screenshot2.png?raw=true)  
 ## Parameters  
  - db: structured data in one of the supported file formats: xlsx, csv, shp (ESRI Shape)
  - hid: (optional) the unique hole identifier. When used, samples with the same `hid` will not be considered neighbors.
