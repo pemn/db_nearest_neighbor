@@ -1,5 +1,6 @@
 # db_nearest_neighbor
-Match samples of different drillholes and of same lithology.
+Match samples/blocks/points by nearest distance.  
+Most common use case is matching drillhole samples to other samples or to block models.  
 Its very generic, so can also be used to match samples with block models, block models with survey points, and many other cases where you need to match near points.
 
 ## screenshots  
