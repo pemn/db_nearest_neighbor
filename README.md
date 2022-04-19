@@ -7,5 +7,5 @@ match samples of different drillholes and of same lithology
 ![screenshot5](assets/screenshot2.png?raw=true)
 ## Parameters
  - db: structured data in one of the supported file formats: xlsx, csv, shp (ESRI Shape)
- - hid: (optional) the unique hole identifier. Samples with the same hid will not be matched.
- - lito: (optional) lithology or any other classificatory field. Only samples with the same lito will be matched.
+ - hid: (optional) the unique hole identifier. When used, samples with the same `hid` will not be considered neighbors.
+ - lito: (optional) lithology or any other classificatory field. When used, only samples with the same `lito` will be considered neighbors.
