@@ -2,10 +2,11 @@
 # find nearest neighbor sample between two sets
 # left_hid: (optional) the unique hole identifier
 # left_lito: (optional) lithology or any other classificatory field
-# right_hid: (optional) only search for samples which match the left hid
-# right_lito: (optional) only search for samples which do not match the left lito
-# v1.1 04/2022 paulo.ernesto
-# v1.0 12/2020 paulo.ernesto
+# right_hid: (optional) only search for samples which do not match the left hid
+# right_lito: (optional) only search for samples which match the left lito
+# v2.0 2023/10 paulo.ernesto
+# v1.1 2022/04 paulo.ernesto
+# v1.0 2020/12 paulo.ernesto
 '''
 Copyright 2020 - 2022 Vale
 
@@ -26,7 +27,7 @@ limitations under the License.
 https://github.com/pemn/db_nearest_neighbor
 ---------------------------------
 
-usage: $0 left_db*csv,xlsx,isis,dm,bmf left_hid:left_db left_lito:left_db left_x:left_db left_y:left_db left_z:left_db right_db*csv,xlsx,bmf right_hid:right_db right_lito:right_db right_x:right_db right_y:right_db right_z:right_db output*csv,xlsx
+usage: $0 left_db*csv,xlsx,isis,dm,bmf left_condition left_hid:left_db left_lito:left_db left_xyz#:left_db right_db*csv,xlsx,bmf right_condition right_hid:right_db right_lito:right_db right_xyz#:right_db output*csv,xlsx
 '''
 
 import sys, os.path
@@ -36,71 +37,59 @@ import pandas as pd
 # import modules from a pyz (zip) file with same name as scripts
 sys.path.insert(0, os.path.splitext(sys.argv[0])[0] + '.pyz')
 
-from _gui import usage_gui, pd_load_dataframe, pd_save_dataframe
+from _gui import usage_gui, pd_load_dataframe, pd_save_dataframe, commalist
 
 from sklearn.metrics import pairwise_distances_argmin_min
 
-def pd_nearest_neighbor(dfs, hid0, lito0, x0, y0, z0, hid1, lito1, x1, y1, z1):
-  v_lut = [{},{}]
-  v_lut[0]['hid'] = hid0
-  v_lut[0]['lito'] = lito0
-  v_lut[0]['midx'] = x0
-  v_lut[0]['midy'] = y0
-  v_lut[0]['midz'] = z0
-  v_lut[1]['hid'] = hid1
-  v_lut[1]['lito'] = lito1
-  v_lut[1]['midx'] = x1
-  v_lut[1]['midy'] = y1
-  v_lut[1]['midz'] = z1
-  odf = pd.DataFrame()
-  df1 = dfs[1]
+def np_dropna(s):
+  s = np.asfarray(s)
+  return np.compress(np.min(np.isfinite(s), 1), s, 0)
 
-  for i0,row0 in dfs[0].iterrows():
-    row1 = pd.Series(dtype=np.object_)
-    row1.rename(i0, inplace=True)
-    query = ''
-    if v_lut[0]['hid'] and v_lut[1]['hid']:
-      hid = row0[v_lut[0]['hid']]
-      query = "%s != '%s'" % (v_lut[1]['hid'], hid)
-    if v_lut[0]['lito'] and v_lut[1]['lito']:
-      if query:
-        query += ' and '
-      query += "%s == '%s'" % (v_lut[1]['lito'], row0[v_lut[0]['lito']])
+def pd_nearest_neighbor(df0, hid0, lito0, xyz0, df1, hid1, lito1, xyz1):
+  li = [None]
+  if lito0 and lito1:
+    if lito0 in df0 and lito1 in df1:
+      li[:] = set(df0[lito0].str.lower().unique()).intersection(df1[lito1].str.lower().unique())
 
-    if query:
-      df1 = dfs[1].query(query)
+  lh = [None]
+  if hid0 and hid1:
+    if hid0 in df0 and hid1 in df1:
+      lh[:] = set(df0[hid0].unique()).intersection(df1[hid1].unique())
 
-    if not (df1 is None or df1.empty):
-      xyz0 = row0[[v_lut[0]['midx'],v_lut[0]['midy'],v_lut[0]['midz']]]
-      xyz0 = np.reshape(xyz0.values, (1, len(xyz0)))
-      xyz1 = df1[[v_lut[1]['midx'],v_lut[1]['midy'],v_lut[1]['midz']]]
-      if xyz1.ndim == 1:
-        xyz1 = np.reshape(xyz1.values, (1, len(xyz1)))
+  nni = np.full(df0.shape[0], np.nan)
+  nnd = np.full(df0.shape[0], np.nan)
+
+  bi0 = np.empty(df0.shape[0], dtype='bool')
+  bi1 = np.empty(df1.shape[0], dtype='bool')
+  ri0 = np.arange(df0.shape[0])
+  ri1 = np.arange(df1.shape[0])
+  for l in li:
+    for h in lh:
+      if l is None:
+        bi0.fill(True)
+        bi1.fill(True)
       else:
-        xyz1 = xyz1.values
-      #print(xyz0)
-      #print(xyz1)
-      i1,d1 = pairwise_distances_argmin_min(xyz0, xyz1)
-      # print(np.ndim(xyz0),np.ndim(xyz1),np.ndim(i1),np.ndim(d1))
-      row1 = df1.iloc[i1].copy()
-      row1['nn_i'] = i1[0]
-      row1['nn_d'] = d1[0]
+        bi0 = df0[lito0].str.lower() == l
+        bi1 = df1[lito1].str.lower() == l
 
-    odf = odf.append(row1)
+      if h is not None:
+        bi0 = np.bitwise_and(bi0, df0[hid0] == h)
+        bi1 = np.bitwise_and(bi1, df1[hid1] != h)
 
-  odf.set_index(pd.RangeIndex(0, len(odf)), False, False, True)
+      if np.any(bi0) and np.any(bi1):
+        i1,d1 = pairwise_distances_argmin_min(df0.loc[bi0, xyz0], df1.loc[bi1, xyz1])
+      
+        nnd[bi0] = d1
+        nni[bi0] = ri1[bi1][i1]
 
-  odf = dfs[0].join(odf, rsuffix='_nn')
+  df0['nn_d'] = nnd
+  df0['nn_i'] = nni
+  return df0.join(pd.DataFrame.from_records([pd.Series() if np.isnan(_) else df1.loc[_] for _ in nni]), rsuffix='_nn')
 
-  return odf
-
-def db_nearest_neighbor(db0, hid0, lito0, x0, y0, z0, db1, hid1, lito1, x1, y1, z1, output):
+def db_nearest_neighbor(db0, condition0, hid0, lito0, xyz0, db1, condition1, hid1, lito1, xyz1, output):
   print("# db_nearest_neighbor started")
-  dfs = []
-  dfs.append(pd_load_dataframe(db0))
-  dfs.append(pd_load_dataframe(db1))
 
-  odf = pd_nearest_neighbor(dfs, hid0, lito0, x0, y0, z0, hid1, lito1, x1, y1, z1)
+  odf = pd_nearest_neighbor(pd_load_dataframe(db0, condition0), hid0, lito0, commalist(xyz0).split(), pd_load_dataframe(db1, condition1), hid1, lito1, commalist(xyz1).split())
   if output:
     pd_save_dataframe(odf, output)
   else:
