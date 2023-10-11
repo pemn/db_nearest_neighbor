@@ -31,7 +31,7 @@ https://github.com/pemn/db_nearest_neighbor
 distribution|status
 ---|---
 ![winpython_icon](https://github.com/pemn/assets/blob/main/winpython_icon.png?raw=true)|✔
-![vulcan_icon](https://github.com/pemn/assets/blob/main/vulcan_icon.png?raw=true)|❓
+![vulcan_icon](https://github.com/pemn/assets/blob/main/vulcan_icon.png?raw=true)|✔
 ![anaconda_icon](https://github.com/pemn/assets/blob/main/anaconda_icon.png?raw=true)|❌
 ## 🙋 Support
 Any question or problem contact:
