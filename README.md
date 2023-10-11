@@ -6,10 +6,10 @@ It requires XYZ, so in cases of ASSAY samples you must first desurvey using pemn
 Its very generic, so can also be used to match samples with block models, block models with survey points, and many other cases where you need to match near points.
 ## screenshots
 ### Graphic User Interface  
-![screenshot1]([assets/screenshot1.png?raw=true](https://github.com/pemn/assets/blob/main/db_nearest_neighbor1.png?raw=true)
+![screenshot1](https://github.com/pemn/assets/blob/main/db_nearest_neighbor1.png?raw=true)
   
 ### Result  
-![screenshot2]([assets/screenshot2.png?raw=true](https://github.com/pemn/assets/blob/main/db_nearest_neighbor2.png?raw=true))  
+![screenshot2](https://github.com/pemn/assets/blob/main/db_nearest_neighbor2.png?raw=true)
 ## Parameters  
  - db: structured data in one of the supported file formats: xlsx, csv, shp (ESRI Shape)
  - hid: (optional) the unique hole identifier. When used, samples with the same `hid` will not be considered neighbors.
