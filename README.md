@@ -38,4 +38,4 @@ Any question or problem contact:
  - paulo.ernesto
 ## 💎 License
 Apache 2.0
-Copyright ![vale_logo_only](https://github.com/pemn/assets/blob/main/vale_logo_only_r.svg) Vale 2023
+Copyright ![vale_logo_only](https://github.com/pemn/assets/blob/main/vale_logo_only_r.svg?raw=true) Vale 2023
